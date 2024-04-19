@@ -1,0 +1,42 @@
+package main
+
+import (
+    "log"
+    "os"
+    "net/http"
+    "github.com/gorilla/mux"
+    "Ex2_Week3/pkg/web"
+    "Ex2_Week3/pkg/config"
+)
+
+func main() {
+    // Open or create the log file
+    logFile, err := os.OpenFile("logs/server.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+    if err != nil {
+        log.Fatalf("error opening log file: %v", err)
+    }
+    defer logFile.Close()
+
+    // Set log output to the file
+    log.SetOutput(logFile)
+
+    // Start logging
+    log.Println("Starting the application...")
+
+    // Setup the rest of your application as normal
+    cfg := config.LoadConfig()
+    router := mux.NewRouter()
+    web.SetupRoutes(router)
+
+    server := &http.Server{
+        Handler: router,
+        Addr:    "127.0.0.1:8080",
+        WriteTimeout: 15 * time.Second,
+        ReadTimeout:  15 * time.Second,
+    }
+
+    log.Println("Server is running on 127.0.0.1:8080")
+    if err := server.ListenAndServe(); err != nil {
+        log.Fatalf("Error starting server: %s", err)
+    }
+}
